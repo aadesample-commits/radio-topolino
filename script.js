@@ -1,65 +1,56 @@
 const audio = document.getElementById('audio-player');
-const fileInput = document.getElementById('file-input');
-const playlistUI = document.getElementById('playlist');
 const trackTitle = document.getElementById('track-title');
 const saveBtn = document.getElementById('save-local');
 const userNameInput = document.getElementById('user-name');
 
-let songs = [];
-let currentIndex = 0;
+// 1. Lista canzoni e durate (MODIFICA QUI CON I TUOI FILE)
+const songs = [
+    { name: "Canzone 1", url: "musica/nome_file_1.mp3", durata: 180 },
+    { name: "Canzone 2", url: "musica/nome_file_2.mp3", durata: 210 }
+];
 
-// 1. Gestione Date
-const dateDisplay = document.getElementById('current-date');
-const oggi = new Date();
-dateDisplay.innerText = oggi.toLocaleDateString('it-IT', { 
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-});
+// 2. Funzione di Sincronizzazione
+function syncRadio() {
+    const tempoTotale = songs.reduce((acc, s) => acc + s.durata, 0);
+    const ora = new Date();
+    // Secondi passati dalla mezzanotte
+    const secondiOggi = (ora.getHours() * 3600) + (ora.getMinutes() * 60) + ora.getSeconds();
+    let tempoRelativo = secondiOggi % tempoTotale;
+    
+    let accumulato = 0;
+    for (let i = 0; i < songs.length; i++) {
+        if (tempoRelativo < accumulato + songs[i].durata) {
+            const secondoInizio = tempoRelativo - accumulato;
+            avviaDiretta(i, secondoInizio);
+            break;
+        }
+        accumulato += songs[i].durata;
+    }
+}
 
-// 2. Caricamento e Playlist
-fileInput.addEventListener('change', (e) => {
-    songs = Array.from(e.target.files);
-    renderPlaylist();
-    if (songs.length > 0) playSong(0);
-});
-
-function renderPlaylist() {
-    playlistUI.innerHTML = '';
-    songs.forEach((song, index) => {
-        const li = document.createElement('li');
-        li.innerText = song.name;
-        li.onclick = () => playSong(index);
-        playlistUI.appendChild(li);
+function avviaDiretta(index, startTime) {
+    const song = songs[index];
+    audio.src = song.url;
+    audio.currentTime = startTime;
+    trackTitle.innerText = "LIVE: " + song.name;
+    audio.play().catch(() => {
+        trackTitle.innerText = "Clicca Play per la diretta!";
     });
 }
 
-function playSong(index) {
-    currentIndex = index;
-    const song = songs[currentIndex];
-    const url = URL.createObjectURL(song);
-    
-    audio.src = url;
-    trackTitle.innerText = song.name;
-    audio.play();
-}
-
-// 3. Riproduzione Automatica
-audio.addEventListener('ended', () => {
-    currentIndex++;
-    if (currentIndex < songs.length) {
-        playSong(currentIndex);
-    }
+// 3. Data e Local Storage
+document.getElementById('current-date').innerText = new Date().toLocaleDateString('it-IT', { 
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
 });
 
-// 4. Local Storage per il nome
 saveBtn.addEventListener('click', () => {
-    const nome = userNameInput.value;
-    if (nome) {
-        localStorage.setItem('radio_user_name', nome);
-        alert(`Nome salvato: ${nome}`);
-    }
+    localStorage.setItem('radio_user_name', userNameInput.value);
 });
 
 window.onload = () => {
-    const savedName = localStorage.getItem('radio_user_name');
-    if (savedName) userNameInput.value = savedName;
+    syncRadio();
+    userNameInput.value = localStorage.getItem('radio_user_name') || "";
 };
+
+// Ricontrolla la posizione ogni volta che un brano finisce
+audio.addEventListener('ended', syncRadio);
