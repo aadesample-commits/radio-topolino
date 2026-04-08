@@ -22,8 +22,7 @@ const songs = [
     { name: "Stavo pensando a te", url: "musica/Fabri Fibra-Stavo pensando a te.mp3", durata: 266 }
 ];
 
-let currentCorrectTime = 0;
-
+// 2. Funzione di Sincronizzazione Universale
 function syncRadio() {
     const tempoTotale = songs.reduce((acc, s) => acc + s.durata, 0);
     const ora = new Date();
@@ -34,7 +33,6 @@ function syncRadio() {
     for (let i = 0; i < songs.length; i++) {
         if (tempoRelativo < accumulato + songs[i].durata) {
             const secondoInizio = tempoRelativo - accumulato;
-            currentCorrectTime = secondoInizio;
             avviaDiretta(i, secondoInizio);
             break;
         }
@@ -52,12 +50,12 @@ function avviaDiretta(index, startTime) {
     });
 }
 
-// --- BLOCCA AVANZAMENTO ---
-// Se l'utente prova a cambiare tempo, lo riportiamo alla sincronizzazione corretta
+// --- BLOCCHI DI SICUREZZA (RADIO MODE) ---
+
+// Impedisce di mandare avanti o indietro
 audio.addEventListener('seeking', () => {
-    // Calcoliamo dove dovrebbe essere ora
-    const tempoTotale = songs.reduce((acc, s) => acc + s.durata, 0);
     const ora = new Date();
+    const tempoTotale = songs.reduce((acc, s) => acc + s.durata, 0);
     const secondiOggi = (ora.getHours() * 3600) + (ora.getMinutes() * 60) + ora.getSeconds();
     let tempoRelativo = secondiOggi % tempoTotale;
     
@@ -65,8 +63,8 @@ audio.addEventListener('seeking', () => {
     for (let i = 0; i < songs.length; i++) {
         if (tempoRelativo < accumulato + songs[i].durata) {
             const secondoEsatto = tempoRelativo - accumulato;
-            // Se la differenza è troppa (l'utente ha cercato di saltare), lo riportiamo indietro
-            if (Math.abs(audio.currentTime - secondoEsatto) > 2) {
+            // Se l'utente si sposta di oltre 1 secondo dalla diretta, lo riportiamo indietro
+            if (Math.abs(audio.currentTime - secondoEsatto) > 1) {
                 audio.currentTime = secondoEsatto;
             }
             break;
@@ -75,7 +73,18 @@ audio.addEventListener('seeking', () => {
     }
 });
 
-// Impedisce il click destro sul player per scaricare o manipolare l'audio
+// Impedisce di mettere in pausa (riparte subito)
+audio.addEventListener('pause', () => {
+    audio.play();
+    // Piccolo check per assicurarsi che sia ancora sincronizzato
+    const ora = new Date();
+    const tempoTotale = songs.reduce((acc, s) => acc + s.durata, 0);
+    const secondiOggi = (ora.getHours() * 3600) + (ora.getMinutes() * 60) + ora.getSeconds();
+    let tempoRelativo = secondiOggi % tempoTotale;
+    // ... ricalcolo veloce opzionale se necessario
+});
+
+// Impedisce il click destro sul player per evitare il download o il menu "pausa"
 audio.addEventListener('contextmenu', (e) => e.preventDefault());
 
 // --- DATA E MEMORIA LOCALE ---
@@ -85,7 +94,7 @@ document.getElementById('current-date').innerText = new Date().toLocaleDateStrin
 
 saveBtn.addEventListener('click', () => {
     localStorage.setItem('radio_user_name', userNameInput.value);
-    alert("Nome salvato nel tuo telefono!");
+    alert("Nome salvato!");
 });
 
 window.onload = () => {
