@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Topolino</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="radio-container">
+        <header>
+            <h1>Radio Topolino</h1>
+            <p id="current-date"></p>
+        </header>
+
+        <div class="player-card">
+            <label for="file-input" class="cover-art" title="Clicca per aggiungere musica">
+                <div class="pulse"></div>
+                <span class="upload-hint">♫</span>
+            </label>
+            
+            <input type="file" id="file-input" accept="audio/*" multiple>
+
+            <div class="info">
+                <h2 id="track-title">Seleziona brani...</h2>
+                <p id="artist-name">La tua musica</p>
+            </div>
+
+            <audio id="audio-player" controls></audio>
+        </div>
+
+        <section class="playlist-section">
+            <ul id="playlist"></ul>
+        </section>
+
+        <section class="user-area">
+            <input type="text" id="user-name" placeholder="Il tuo nome">
+            <button id="save-local">Salva</button>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
