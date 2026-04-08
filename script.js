@@ -2,8 +2,9 @@ const audio = document.getElementById('audio-player');
 const trackTitle = document.getElementById('track-title');
 const saveBtn = document.getElementById('save-local');
 const userNameInput = document.getElementById('user-name');
+const mainPlayer = document.getElementById('main-player');
 
-// 1. Lista canzoni e durate
+// 1. Lista canzoni e durate ufficiali
 const songs = [
     { name: "Everyday", url: "musica/Everyday.mp3", durata: 262 },
     { name: "Rapp Snitch Knishes", url: "musica/Rapp Snitch Knishes (feat. Mr. Fantastik).mp3", durata: 172 },
@@ -21,6 +22,8 @@ const songs = [
     { name: "STRISCIA", url: "musica/STRISCIA.mp3", durata: 205 },
     { name: "Stavo pensando a te", url: "musica/Fabri Fibra-Stavo pensando a te.mp3", durata: 266 }
 ];
+
+let isSintonizzato = false;
 
 // 2. Funzione di Sincronizzazione Universale
 function syncRadio() {
@@ -44,47 +47,54 @@ function avviaDiretta(index, startTime) {
     const song = songs[index];
     audio.src = song.url;
     audio.currentTime = startTime;
-    trackTitle.innerText = "LIVE: " + song.name;
-    audio.play().catch(() => {
-        trackTitle.innerText = "Clicca Play per la diretta!";
-    });
+    if (isSintonizzato) {
+        trackTitle.innerText = "LIVE: " + song.name;
+        audio.play().catch(e => console.log("Errore riproduzione:", e));
+    }
 }
+
+// 3. Sintonizzazione al click (Necessaria per i browser)
+mainPlayer.addEventListener('click', () => {
+    if (!isSintonizzato) {
+        isSintonizzato = true;
+        const pulse = document.getElementById('pulse-dot');
+        if (pulse) pulse.style.display = "block";
+        const icon = document.getElementById('play-icon');
+        if (icon) icon.innerText = "📻";
+        syncRadio();
+    }
+});
 
 // --- BLOCCHI DI SICUREZZA (RADIO MODE) ---
 
 // Impedisce di mandare avanti o indietro
 audio.addEventListener('seeking', () => {
-    const ora = new Date();
-    const tempoTotale = songs.reduce((acc, s) => acc + s.durata, 0);
-    const secondiOggi = (ora.getHours() * 3600) + (ora.getMinutes() * 60) + ora.getSeconds();
-    let tempoRelativo = secondiOggi % tempoTotale;
-    
-    let accumulato = 0;
-    for (let i = 0; i < songs.length; i++) {
-        if (tempoRelativo < accumulato + songs[i].durata) {
-            const secondoEsatto = tempoRelativo - accumulato;
-            // Se l'utente si sposta di oltre 1 secondo dalla diretta, lo riportiamo indietro
-            if (Math.abs(audio.currentTime - secondoEsatto) > 1) {
-                audio.currentTime = secondoEsatto;
+    if (isSintonizzato) {
+        const ora = new Date();
+        const tempoTotale = songs.reduce((acc, s) => acc + s.durata, 0);
+        const secondiOggi = (ora.getHours() * 3600) + (ora.getMinutes() * 60) + ora.getSeconds();
+        let tempoRelativo = secondiOggi % tempoTotale;
+        
+        let accumulato = 0;
+        for (let i = 0; i < songs.length; i++) {
+            if (tempoRelativo < accumulato + songs[i].durata) {
+                const secondoEsatto = tempoRelativo - accumulato;
+                if (Math.abs(audio.currentTime - secondoEsatto) > 1) {
+                    audio.currentTime = secondoEsatto;
+                }
+                break;
             }
-            break;
+            accumulato += songs[i].durata;
         }
-        accumulato += songs[i].durata;
     }
 });
 
-// Impedisce di mettere in pausa (riparte subito)
+// Impedisce di mettere in pausa
 audio.addEventListener('pause', () => {
-    audio.play();
-    // Piccolo check per assicurarsi che sia ancora sincronizzato
-    const ora = new Date();
-    const tempoTotale = songs.reduce((acc, s) => acc + s.durata, 0);
-    const secondiOggi = (ora.getHours() * 3600) + (ora.getMinutes() * 60) + ora.getSeconds();
-    let tempoRelativo = secondiOggi % tempoTotale;
-    // ... ricalcolo veloce opzionale se necessario
+    if (isSintonizzato) audio.play();
 });
 
-// Impedisce il click destro sul player per evitare il download o il menu "pausa"
+// Impedisce click destro
 audio.addEventListener('contextmenu', (e) => e.preventDefault());
 
 // --- DATA E MEMORIA LOCALE ---
@@ -98,7 +108,6 @@ saveBtn.addEventListener('click', () => {
 });
 
 window.onload = () => {
-    syncRadio();
     userNameInput.value = localStorage.getItem('radio_user_name') || "";
 };
 
