@@ -5,7 +5,7 @@ const userNameInput = document.getElementById('user-name');
 
 // 1. Lista canzoni e durate (MODIFICA QUI CON I TUOI FILE)
 const songs = [
-    { name: "Canzone 1", url: "musica/A$AP Rocky - Everyday (Official Audio) ft. Rod Stewart, Miguel, Mark Ronson.mp3", durata: 262 },
+    { name: "Canzone 1", url: "musica/Everyday.mp3", durata: 262 },
     { name: "Canzone 2", url: "musica/Rapp Snitch Knishes (feat. Mr. Fantastik).mp3", durata: 172 },
     { name: "Canzone 3", url: "musica/Flashing Lights.mp3", durata: 237 },
     { name: "Canzone 4", url: "musica/Father Stretch My Hands Pt. 1.mp3", durata: 135 },
