@@ -18,7 +18,7 @@ const songs = [
     { name: "Smells Like Teen Spirit", url: "musica/Nirvana - Smells Like Teen Spirit (Official Music Video).mp3", durata: 278 },
     { name: "Hit The Road Jack", url: "musica/Ray Charles - Hit The Road Jack (Official Lyrics Video).mp3", durata: 122 },
     { name: "CULO", url: "musica/CULO.mp3", durata: 177 },
-    { name: "DONNE RICCHE", url: "musica/DONNE RICCHE - TonyPitony | ACOUSTIC VERSION.mp3", durata: 172 },
+    { name: "DONNE RICCHE", url: "musica/DONNE RICCHE - TonyPitony  ACOUSTIC VERSION.mp3", durata: 172 },
     { name: "STRISCIA", url: "musica/STRISCIA.mp3", durata: 205 },
     { name: "Stavo pensando a te", url: "musica/Fabri Fibra-Stavo pensando a te.mp3", durata: 266 }
 ];
