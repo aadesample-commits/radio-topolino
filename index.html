@@ -14,15 +14,15 @@
             <p id="current-date"></p>
         </header>
 
-        <div class="player-card">
+        <div class="player-card" id="main-player" style="cursor: pointer;">
             <div class="cover-art">
-                <div class="pulse"></div>
-                <span class="upload-hint">📻</span>
+                <div class="pulse" id="pulse-dot" style="display:none;"></div>
+                <span id="play-icon">▶</span>
             </div>
 
             <div class="info">
-                <h2 id="track-title">Sintonizzazione...</h2>
-                <p id="artist-name">In Diretta H24</p>
+                <h2 id="track-title">Clicca per sintonizzarti</h2>
+                <p id="artist-name">Radio Topolino Live</p>
             </div>
 
             <audio id="audio-player"></audio>
@@ -33,8 +33,8 @@
             <button id="save-local">Salva</button>
         </section>
         
-        <p style="font-size: 0.8em; color: #666; margin-top: 10px;">
-            Nota: La musica è sincronizzata per tutti gli ascoltatori.
+        <p style="font-size: 0.8em; color: #666; margin-top: 10px; text-align: center;">
+            La musica è sincronizzata per tutti gli ascoltatori.
         </p>
     </div>
 
