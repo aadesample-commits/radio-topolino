@@ -4,7 +4,6 @@ const saveBtn = document.getElementById('save-local');
 const userNameInput = document.getElementById('user-name');
 
 // 1. Lista canzoni e durate
-// NOTA: Assicurati che i file nella cartella "musica" abbiano ESATTAMENTE questi nomi
 const songs = [
     { name: "Everyday", url: "musica/Everyday.mp3", durata: 262 },
     { name: "Rapp Snitch Knishes", url: "musica/Rapp Snitch Knishes (feat. Mr. Fantastik).mp3", durata: 172 },
@@ -23,12 +22,11 @@ const songs = [
     { name: "Stavo pensando a te", url: "musica/Fabri Fibra-Stavo pensando a te.mp3", durata: 266 }
 ];
 
-// 2. Funzione di Sincronizzazione Universale
+let currentCorrectTime = 0;
+
 function syncRadio() {
     const tempoTotale = songs.reduce((acc, s) => acc + s.durata, 0);
     const ora = new Date();
-    
-    // Calcolo preciso dei secondi passati dalla mezzanotte
     const secondiOggi = (ora.getHours() * 3600) + (ora.getMinutes() * 60) + ora.getSeconds();
     let tempoRelativo = secondiOggi % tempoTotale;
     
@@ -36,6 +34,7 @@ function syncRadio() {
     for (let i = 0; i < songs.length; i++) {
         if (tempoRelativo < accumulato + songs[i].durata) {
             const secondoInizio = tempoRelativo - accumulato;
+            currentCorrectTime = secondoInizio;
             avviaDiretta(i, secondoInizio);
             break;
         }
@@ -48,36 +47,50 @@ function avviaDiretta(index, startTime) {
     audio.src = song.url;
     audio.currentTime = startTime;
     trackTitle.innerText = "LIVE: " + song.name;
-    
-    // Prova il play automatico (spesso bloccato dai browser senza interazione)
     audio.play().catch(() => {
         trackTitle.innerText = "Clicca Play per la diretta!";
     });
 }
 
-// 3. Funzioni di supporto e Memoria Locale
-// Mostra la data corrente
+// --- BLOCCA AVANZAMENTO ---
+// Se l'utente prova a cambiare tempo, lo riportiamo alla sincronizzazione corretta
+audio.addEventListener('seeking', () => {
+    // Calcoliamo dove dovrebbe essere ora
+    const tempoTotale = songs.reduce((acc, s) => acc + s.durata, 0);
+    const ora = new Date();
+    const secondiOggi = (ora.getHours() * 3600) + (ora.getMinutes() * 60) + ora.getSeconds();
+    let tempoRelativo = secondiOggi % tempoTotale;
+    
+    let accumulato = 0;
+    for (let i = 0; i < songs.length; i++) {
+        if (tempoRelativo < accumulato + songs[i].durata) {
+            const secondoEsatto = tempoRelativo - accumulato;
+            // Se la differenza è troppa (l'utente ha cercato di saltare), lo riportiamo indietro
+            if (Math.abs(audio.currentTime - secondoEsatto) > 2) {
+                audio.currentTime = secondoEsatto;
+            }
+            break;
+        }
+        accumulato += songs[i].durata;
+    }
+});
+
+// Impedisce il click destro sul player per scaricare o manipolare l'audio
+audio.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// --- DATA E MEMORIA LOCALE ---
 document.getElementById('current-date').innerText = new Date().toLocaleDateString('it-IT', { 
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
 });
 
-// Salvataggio nome utente in local storage
 saveBtn.addEventListener('click', () => {
-    const name = userNameInput.value;
-    localStorage.setItem('radio_user_name', name);
-    alert("Nome salvato!");
+    localStorage.setItem('radio_user_name', userNameInput.value);
+    alert("Nome salvato nel tuo telefono!");
 });
 
 window.onload = () => {
     syncRadio();
-    // Recupera il nome salvato se esiste
-    const savedName = localStorage.getItem('radio_user_name');
-    if (savedName) {
-        userNameInput.value = savedName;
-    }
+    userNameInput.value = localStorage.getItem('radio_user_name') || "";
 };
 
-// Quando una canzone finisce, ricalcola la posizione per la prossima
-audio.addEventListener('ended', () => {
-    syncRadio();
-});
+audio.addEventListener('ended', syncRadio);
