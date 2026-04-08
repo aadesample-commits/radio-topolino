@@ -17,20 +17,25 @@
         <div class="player-card">
             <div class="cover-art">
                 <div class="pulse"></div>
-            </div>
-            
-            <div class="info">
-                <h2 id="track-title">Sintonizzazione...</h2>
-                <p id="artist-name">In Diretta</p>
+                <span class="upload-hint">📻</span>
             </div>
 
-            <audio id="audio-player" controls></audio>
+            <div class="info">
+                <h2 id="track-title">Sintonizzazione...</h2>
+                <p id="artist-name">In Diretta H24</p>
+            </div>
+
+            <audio id="audio-player"></audio>
         </div>
 
         <section class="user-area">
             <input type="text" id="user-name" placeholder="Il tuo nome">
-            <button id="save-local">Salva Nome</button>
+            <button id="save-local">Salva</button>
         </section>
+        
+        <p style="font-size: 0.8em; color: #666; margin-top: 10px;">
+            Nota: La musica è sincronizzata per tutti gli ascoltatori.
+        </p>
     </div>
 
     <script src="script.js"></script>
